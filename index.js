@@ -31,5 +31,3 @@ mongoose
 app.listen(3000, () => {
   console.log("Runnning in http://localhost:3000");
 });
-
-njhjvhjbkj
