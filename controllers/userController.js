@@ -57,3 +57,29 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const login = async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+    const user = await User.findOne({
+      $or: [{ email: identifier.toLowerCase() }, { username: identifier }],
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid username or email" });
+    }
+
+    const isValid = await user.comparePassword(password);
+
+    if (!isValid) {
+      return res.status(401).json({ message: "Incorrect Password!" });
+    }
+
+    res.status(200).json({ message: "Login Successful" });
+  } catch (error) {
+    res.status(401).json({
+      message: "Incorrect credentials.",
+    });
+  }
+};
+
