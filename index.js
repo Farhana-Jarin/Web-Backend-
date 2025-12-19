@@ -5,6 +5,7 @@ import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import { connectDB } from "./config/database.js";
 
 dotenv.config();
@@ -34,6 +35,9 @@ mongoose
 
 connectDB();
 
-app.listen(8000, () => {
-  console.log("Running in http://localhost:8000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Runnning in http://localhost:${PORT}`);
 });
+
