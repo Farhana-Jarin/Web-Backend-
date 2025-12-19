@@ -1,17 +1,35 @@
-import express from "express";
-import {
-  register,
-  login,
-  getProfile,
-  logout,
-} from "../controllers/authController.js";
-import { authenticate } from "../middlewares/authMiddleware.js";
+import jwt from "jsonwebtoken";
+import User from "../models/userModel.js";
 
-const router = express.Router();
+export const authenticate = async (req, res, next) => {
+  try {
+    const token =
+      req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
-router.post("/register", register);
-router.post("/login", login);
-router.get("/profile", authenticate, getProfile);
-router.post("/logout", authenticate, logout);
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Access denied. No token provided.",
+      });
+    }
 
-export default router;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token. User not found",
+      });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token.",
+    });
+  }
+};
