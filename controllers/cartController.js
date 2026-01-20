@@ -2,9 +2,15 @@ import Cart from "../models/cartModel.js";
 
 export const getCarts = async (req, res) => {
   try {
-    const carts = await Cart.find({})
+    const { userId } = req.query;
+
+    const query = {};
+    if (userId) query.user = userId;
+
+    const carts = await Cart.find(query)
       .populate("user")
       .populate("items.product");
+
     res.status(200).json(carts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -13,10 +19,10 @@ export const getCarts = async (req, res) => {
 
 export const getCart = async (req, res) => {
   try {
-    const { id } = req.params;
-    const cart = await Cart.findById(id)
+    const cart = await Cart.findById(req.params.id)
       .populate("user")
       .populate("items.product");
+
     if (!cart) return res.status(404).json({ message: "Cart not found" });
     res.status(200).json(cart);
   } catch (error) {
@@ -35,10 +41,12 @@ export const createCart = async (req, res) => {
 
 export const updateCart = async (req, res) => {
   try {
-    const { id } = req.params;
-    const cart = await Cart.findByIdAndUpdate(id, req.body, { new: true })
+    const cart = await Cart.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    })
       .populate("user")
       .populate("items.product");
+
     if (!cart) return res.status(404).json({ message: "Cart not found" });
     res.status(200).json(cart);
   } catch (error) {
@@ -48,8 +56,7 @@ export const updateCart = async (req, res) => {
 
 export const deleteCart = async (req, res) => {
   try {
-    const { id } = req.params;
-    const cart = await Cart.findByIdAndDelete(id);
+    const cart = await Cart.findByIdAndDelete(req.params.id);
     if (!cart) return res.status(404).json({ message: "Cart not found" });
     res.status(200).json({ message: "Cart deleted successfully" });
   } catch (error) {
