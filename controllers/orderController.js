@@ -2,9 +2,17 @@ import Order from "../models/orderModel.js";
 
 export const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({})
+    const { status, page = 1, limit = 10 } = req.query;
+
+    const query = {};
+    if (status) query.status = status;
+
+    const orders = await Order.find(query)
       .populate("user")
-      .populate("products.product");
+      .populate("products.product")
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -13,10 +21,10 @@ export const getOrders = async (req, res) => {
 
 export const getOrder = async (req, res) => {
   try {
-    const { id } = req.params;
-    const order = await Order.findById(id)
+    const order = await Order.findById(req.params.id)
       .populate("user")
       .populate("products.product");
+
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.status(200).json(order);
   } catch (error) {
@@ -35,8 +43,9 @@ export const createOrder = async (req, res) => {
 
 export const updateOrder = async (req, res) => {
   try {
-    const { id } = req.params;
-    const order = await Order.findByIdAndUpdate(id, req.body, { new: true });
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.status(200).json(order);
   } catch (error) {
@@ -46,8 +55,7 @@ export const updateOrder = async (req, res) => {
 
 export const deleteOrder = async (req, res) => {
   try {
-    const { id } = req.params;
-    const order = await Order.findByIdAndDelete(id);
+    const order = await Order.findByIdAndDelete(req.params.id);
     if (!order) return res.status(404).json({ message: "Order not found" });
     res.status(200).json({ message: "Order deleted successfully" });
   } catch (error) {
